@@ -1,0 +1,206 @@
+<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 fb-twt-box">
+    <div class="event-title-box">
+        <h4>Facebook Feed</h4>
+    </div>
+    <ul>
+
+        <?php 
+        //echo do_shortcode('[recent_facebook_posts]');
+        $appID = get_option('facebookappid');
+        $appSecret = get_option('facebookappsecret');
+        $accessToken = $appID . '|' . $appSecret;
+        $id =  get_post_meta($post->ID,'facebook_page_id',true);
+        $url = "https://graph.facebook.com/".$id."/posts?fields=id,message,link,created_time,name,caption,object_id,description,type,from,status_type,comments.limit(1).summary(true),likes.limit(1).summary(true),picture&access_token=".$accessToken;
+        $result = file_get_contents($url);
+        $profile_pic =  "http://graph.facebook.com/".$id."/picture";
+        $page_posts = json_decode($result, true);
+        //echo "<pre>"; print_r($page_posts); echo "</pre>";
+        foreach($page_posts['data'] as $post1){
+            $message = ($post1['message']) ? $post1['message'] : " ";
+            $post_time = $post1['created_time']; 
+            $fid = explode('_', $post1['id']);
+            $acid = $fid[0];
+            $posid = $fid[1];
+            $fb_post = strtotime($post1['created_time']);
+            $today = strtotime(date('Y-m-d H:i:s'));
+            $time_differnce = $today-$fb_post;
+            $years = 60*60*24*365;
+            $months = 60*60*24*30;
+            $days = 60*60*24;
+            $hours = 60*60;
+            $minutes = 60;
+            if(intval($time_differnce/$years) > 1){
+                $facebook_post_time = intval($time_differnce/$years)." years ago";
+            }else if(intval($time_differnce/$years) > 0){
+                $facebook_post_time = intval($time_differnce/$years)." year ago";
+            }else if(intval($time_differnce/$months) > 1){
+                $facebook_post_time = intval($time_differnce/$months)." months ago";
+            }else if(intval(($time_differnce/$months)) > 0){
+                $facebook_post_time = intval(($time_differnce/$months))." month ago";
+            }else if(intval(($time_differnce/$days)) > 1){
+                $facebook_post_time = intval(($time_differnce/$days))." days ago";
+            }else if (intval(($time_differnce/$days)) > 0) {
+                $facebook_post_time = intval(($time_differnce/$days))." day ago";
+            }else if (intval(($time_differnce/$hours)) > 1) {
+                $facebook_post_time = intval(($time_differnce/$hours))." hours ago";
+            }else if (intval(($time_differnce/$hours)) > 0) {
+                $facebook_post_time = intval(($time_differnce/$hours))." hour ago";
+            }else if (intval(($time_differnce/$minutes)) > 1) {
+                $facebook_post_time = intval(($time_differnce/$minutes))." minutes ago";
+            }else if (intval(($time_differnce/$minutes)) > 0) {
+                $facebook_post_time = intval(($time_differnce/$minutes))." minute ago";
+            }else if (intval(($time_differnce)) > 1) {
+                $facebook_post_time = intval(($time_differnce))." seconds ago";
+            }else {
+                $facebook_post_time = "few seconds ago";
+            }
+        ?>
+         <li>
+            <div class="event-img circle">
+                <img src="<?php echo $profile_pic; ?>" alt="Tets 5" title="Tets 5">
+            </div>
+            <div class="event-content event-all-page">
+                <div class="title-butt-box">
+                    <a href="<?= get_post_meta($post->ID,'facebook_page_link',true); ?>" target="_blank"><h3><?= $post1['from']['name']; ?></h3></a>
+                </div>
+                <div class="description-box">
+                    <div class="description-wrap description-wrapers">
+                        <p><?= $message; ?> </p>
+                        <?php if(isset($post1['object_id'])){ ?>
+                            <?php if(isset($post1['type'])){ ?>
+                                <?php if($post1['type']=='video'){ ?>
+                                    <iframe src="https://www.facebook.com/plugins/video.php?href=https://www.facebook.com/<?= $acid; ?>/videos/<?= $posid; ?>/&show_text=0&width=560" width="90%" height="250px" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allowFullScreen="true"></iframe>
+                                <?php } ?>
+                                <?php if($post1['type']=='photo'){ ?>
+                                    <!--<p class="rfbp-image-wrap">
+                                         <a target="_blank" class="" href="https://www.facebook.com/<?= $acid; ?>/posts/<?= $posid; ?>" rel="external nofolloW">
+                                        <img class="rfbp-image" src="http://graph.facebook.com/<?= $post1['object_id']; ?>/picture" style="max-width: 100%; max-height: none" alt="">
+                                        </a>
+                                    </p>-->
+                                     <div class="post-img">
+                                        <a target="_blank" class="" href="https://www.facebook.com/<?= $acid; ?>/posts/<?= $posid; ?>" rel="external nofolloW"><img src="http://graph.facebook.com/<?= $post1['object_id']; ?>/picture" width="80%"></a>
+                                    </div> 
+                                <?php } ?>
+                            <?php } ?>
+                        <?php } ?>
+                        <p class="rfbp-post-link-wrap">
+                            <a target="_blank" class="rfbp-post-link" href="https://www.facebook.com/<?= $acid; ?>/posts/<?= $posid; ?>" rel="external nofolloW">
+                                <span class="rfbp-like-count"><?= $post1['likes']['summary']['total_count']; ?><span>likes, </span></span>                    
+                                <span class="rfbp-comment-count"><?= $post1['comments']['summary']['total_count']; ?>  <span>comments</span></span>             
+                                <span class="rfbp-timestamp" title="Thursday, August 31, 2017 at 4:57">,<?= $facebook_post_time; ?></span>
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <?php  } ?>
+    </ul>
+</div>
+
+<!-- Twitter Feed -->
+<div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 fb-twt-box">
+    <div class="event-title-box">
+        <h4>Twitter Feed</h4>
+    </div>
+    <ul>
+        <?php 
+
+        //dynamic_sidebar('Footer 1');
+        $settings = array(
+            'oauth_access_token' => get_option('twitteraccesstoken'),
+            'oauth_access_token_secret' => get_option('TwitterAccessTokenSecret'),
+            'consumer_key' => get_option('twitterconsumerkey'),
+            'consumer_secret' => get_option('twitterconsumersecret')
+        );
+        $twtusrid = get_post_meta($post->ID,'twitter_user_name',true);
+        $twtterurl = "https://api.twitter.com/1.1/statuses/user_timeline.json";
+        $requestMethod = "GET";
+        $getfield = "?screen_name=$twtusrid&count=20";
+        $twitter = new TwitterAPIExchange($settings);
+        $string = json_decode($twitter->setGetfield($getfield)
+        ->buildOauth($twtterurl, $requestMethod)
+        ->performRequest(),$assoc = TRUE);
+        //echo "<pre>";print_r($string);echo "</pre>";
+        ?>
+        <?php foreach($string as $tweet) { ?>
+        <?php 
+        $today = strtotime(date('Y-m-d H:i:s'));
+        $tw_post = strtotime($tweet['created_at']);
+            $time_differnce = $today-$tw_post;
+            $years = 60*60*24*365;
+            $months = 60*60*24*30;
+            $days = 60*60*24;
+            $hours = 60*60;
+            $minutes = 60;
+            if(intval($time_differnce/$years) > 1){
+                $twitter_post_time = intval($time_differnce/$years)." years ago";
+            }else if(intval($time_differnce/$years) > 0){
+                $twitter_post_time = intval($time_differnce/$years)." year ago";
+            }else if(intval($time_differnce/$months) > 1){
+                $twitter_post_time = intval($time_differnce/$months)." months ago";
+            }else if(intval(($time_differnce/$months)) > 0){
+                $twitter_post_time = intval(($time_differnce/$months))." month ago";
+            }else if(intval(($time_differnce/$days)) > 1){
+                $twitter_post_time = intval(($time_differnce/$days))." days ago";
+            }else if (intval(($time_differnce/$days)) > 0) {
+                $twitter_post_time = intval(($time_differnce/$days))." day ago";
+            }else if (intval(($time_differnce/$hours)) > 1) {
+                $twitter_post_time = intval(($time_differnce/$hours))." hours ago";
+            }else if (intval(($time_differnce/$hours)) > 0) {
+                $twitter_post_time = intval(($time_differnce/$hours))." hour ago";
+            }else if (intval(($time_differnce/$minutes)) > 1) {
+                $twitter_post_time = intval(($time_differnce/$minutes))." minutes ago";
+            }else if (intval(($time_differnce/$minutes)) > 0) {
+                $twitter_post_time = intval(($time_differnce/$minutes))." minute ago";
+            }else if (intval(($time_differnce)) > 1) {
+                $twitter_post_time = intval(($time_differnce))." seconds ago";
+            }else {
+                $twitter_post_time = "few seconds ago";
+            }
+        ?>
+        <li>
+            <div class="event-img circle">
+                <img src="<?= $tweet['user']['profile_image_url']; ?>" alt="Tets 5" title="Tets 5">
+            </div>
+            <div class="event-content event-all-page">
+                <div class="title-butt-box">
+                    <a href="https://twitter.com/<?= $tweet['user']['screen_name']; ?>" target="_blank"><h3><?= $tweet['user']['name']; ?></h3><span>@<?= $tweet['user']['screen_name']; ?></span></a>
+                   <h6><i class="zmdi zmdi-twitter"></i></h6>
+                </div>
+                <div class="description-box">
+                    <div class="description-wrap description-wrapers">
+                        <?php $substring = substr($tweet['text'],0,strpos($tweet['text'],"https")); ?>
+                        <?php if($substring=="") { ?>
+                            <p class="post-cont"><?= $tweet['text']; ?></p>
+                        <?php } else { ?>
+                            <p class="post-cont"><?= $substring; ?></p>
+                        <?php } ?>
+                        <?php if(isset($tweet['extended_entities']['media'])) {?>
+                            <div class="twi-post-img">
+                                <?php foreach($tweet['extended_entities']['media'] as $twitphoto) { ?>
+                                    <a href="<?= $twitphoto['expanded_url']; ?>" target="_blabk">
+                                    <?php if($twitphoto['type']=='photo') { ?>
+                                        <img class="NaturalImage-image" data-srcset="" title="View image on Twitter" alt="View image on Twitter" src="<?= $twitphoto['media_url_https']; ?>" width="49%">
+                                    <?php } else if($twitphoto['type']=='video') { ?>
+                                      <blockquote class="twitter-video" data-lang="en"><p lang="en" dir="ltr"><?= $tweet['text']; ?><a href="<?= $twitphoto['url']; ?>"><?= $twitphoto['display_url']; ?></a></p>&mdash; <?= $tweet['user']['name']; ?> (<?= $tweet['user']['screen_name']; ?>) <a href="<?= $twitphoto['expanded_url']; ?>"><?= date('d-M-Y',strtotime($tweet['created_at'])); ?></a></blockquote>
+                                        <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+                                    <?php } ?>
+                                    </a>
+                                <?php } ?>
+                            </div>
+                        <?php } ?>
+                    </div>
+                    <ul class="timeline-Tweet-actions" data-scribe="component:actions" role="menu" aria-label="Tweet actions">
+                        <li class="twit-favorite">
+                            <a class="TweetAction TweetAction--heartEdge web-intent" href="https://twitter.com/intent/like?tweet_id=<?= $tweet['id_str']; ?>" data-scribe="element:heart" target="_blank"><i class="zmdi zmdi-favorite-outline <?php if($tweet['favorite_count']>0){ echo 'redcolor'; } else { echo ''; } ?>"></i><span><?php if($tweet['favorite_count']>0){ echo $tweet['favorite_count'].','; } else { echo ''; } ?></span> </a>
+
+                            <h6><?= $twitter_post_time; ?></h6> 
+
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </li>
+        <?php } ?>
+    </ul>
